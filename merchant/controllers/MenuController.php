@@ -32,9 +32,7 @@ class MenuController extends BaseController
             ->limit($pages->limit)
             ->all();
 
-        $openPlatform = Yii::$app->wechat->getOpenPlatform();
-        $app = Bind::findOne(['merchant_id'=>Yii::$app->services->merchant->getId()]);
-        $account = $openPlatform->officialAccount((string)$app['appid'], (string)$app['refresh_token']);
+        $account = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId());
         // 查询下菜单
         !$models && Yii::$app->debris->getWechatError($account->menu->list());
         return $this->render( $this->action->id,[
@@ -48,13 +46,84 @@ class MenuController extends BaseController
     public function actionSync()
     {
         try {
-            $openPlatform = Yii::$app->wechat->getOpenPlatform();
-            $app = Bind::findOne(['merchant_id'=>Yii::$app->services->merchant->getId()]);
-            $account = $openPlatform->officialAccount((string)$app['appid'], (string)$app['refresh_token']);
-            $account->menu->sync();
+            Yii::$app->yunWechatService->menu->sync();
             return ResultHelper::json(200, '同步菜单成功');
         } catch (\Exception $e) {
             return ResultHelper::json(422, $e->getMessage());
         }
+
+    }
+
+    public function actionEdit()
+    {
+        $request = Yii::$app->request;
+        $id = $request->get('id');
+        $type = $request->get('type');
+        $model = $this->findModel($id);
+        if (Yii::$app->request->isPost) {
+            $postInfo = Yii::$app->request->post();
+            $model = $this->findModel($postInfo['id']);
+            $model->attributes = $postInfo;
+
+            if (!isset($postInfo['list'])) {
+                return ResultHelper::json(422, '请添加菜单');
+            }
+
+            try {
+                Yii::$app->yunWechatService->menu->createSave($model, $postInfo['list']);
+                return ResultHelper::json(200, "修改成功");
+            } catch (\Exception $e) {
+                return ResultHelper::json(422, $e->getMessage());
+            }
+        }
+
+        return $this->render('edit', [
+            'model' => $model,
+            'menuTypes' => Menu::$menuTypes,
+            'type' => $type,
+            'fansTags' => Yii::$app->yunWechatService->fansTags->getList()
+        ]);
+
+    }
+
+    public function actionSave($id)
+    {
+
+        if ($id) {
+            $model = $this->findModel($id);
+            $model->save();
+
+            // 创建微信菜单
+            $createReturn = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())
+                ->menu->create($model->menu_data);
+            // 解析微信接口是否报错
+            if ($error = Yii::$app->debris->getWechatError($createReturn, false)) {
+                return $this->message($error, $this->redirect(['index']), 'error');
+            }
+        }
+
+        return $this->redirect(['index']);
+    }
+
+    public function actionDelete($id, $type)
+    {
+        $model = $this->findModel($id);
+        if ($model->delete()) {
+            // 个性化菜单删除
+            !empty($model['menu_id']) && Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->menu->delete($model['menu_id']);
+            return $this->message("删除成功", $this->redirect(['index', 'type' => $type]));
+        }
+
+        return $this->message("删除失败", $this->redirect(['index', 'type' => $type]), 'error');
+    }
+
+    protected function findModel($id)
+    {
+        if (empty($id) || empty(($model = Menu::findOne(['id' => $id, 'merchant_id' => $this->getMerchantId()])))) {
+            $model = new Menu;
+            return $model->loadDefaultValues();
+        }
+
+        return $model;
     }
 }

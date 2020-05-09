@@ -36,6 +36,7 @@ class SettingController extends BaseController implements AddonsSetting
 
     public function actionHistoryStat()
     {
+
         $app = Yii::$app->wechat->getOpenPlatform();
         $url = $app->getPreAuthorizationUrl('http://zebra.yun-net.com/merchant/yun-wechat/setting/call-back?merchantid='.Yii::$app->services->merchant->getId());
         return $this->render( $this->action->id,[
@@ -79,5 +80,22 @@ class SettingController extends BaseController implements AddonsSetting
             return $this->redirect( ['history-stat'] );
         }
         return $this->redirect( ["/site/error"] );
+    }
+
+    public function actionSpecialMessage()
+    {
+        if (Yii::$app->request->isPost) {
+            try {
+                Yii::$app->yunWechatService->setting->setByFieldName('special', Yii::$app->request->post('setting'));
+
+                return $this->message('修改成功', $this->redirect(['special-message']));
+            } catch (\Exception $e) {
+                return $this->message($e->getMessage(), $this->redirect(['special-message']), 'error');
+            }
+        }
+
+        return $this->render('special-message', [
+            'list' => Yii::$app->yunWechatService->setting->specialConfig(),
+        ]);
     }
 }

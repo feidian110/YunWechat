@@ -1,0 +1,55 @@
+<?php
+
+namespace addons\YunWechat\common\models\base;
+
+use Yii;
+
+/**
+ * This is the model class for table "yun_net_wechat_form_id".
+ *
+ * @property int $id
+ * @property int $merchant_id 商户id
+ * @property int $member_id 用户id
+ * @property string $form_id formid
+ * @property int $stoped_at 失效时间
+ * @property int $created_at 创建时间
+ * @property int $updated_at 修改时间
+ */
+class FormId extends \common\models\base\BaseModel
+{
+    /**
+     * {@inheritdoc}
+     */
+    public static function tableName()
+    {
+        return '{{%wechat_form_id}}';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rules()
+    {
+        return [
+            [['merchant_id', 'member_id', 'stoped_at', 'created_at', 'updated_at'], 'integer'],
+            [['member_id'], 'required'],
+            [['form_id'], 'string', 'max' => 100],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'merchant_id' => 'Merchant ID',
+            'member_id' => 'Member ID',
+            'form_id' => 'Form ID',
+            'stoped_at' => 'Stoped At',
+            'created_at' => 'Created At',
+            'updated_at' => 'Updated At',
+        ];
+    }
+}
