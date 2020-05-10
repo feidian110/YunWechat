@@ -2,6 +2,7 @@
 namespace addons\YunWechat\common\services\base;
 
 
+use addons\YunWechat\common\models\base\DemoData;
 use addons\YunWechat\common\models\base\MassRecord;
 use addons\YunWechat\common\models\base\Setting;
 use addons\YunWechat\common\models\rule\Rule;

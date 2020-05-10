@@ -8,6 +8,8 @@ use common\components\Service;
  * @package addons\YunWechat\common\services
  * @property \addons\YunWechat\common\services\base\AccountService $account 菜单
  * @property \addons\YunWechat\common\services\base\MenuService $menu 菜单
+ * @property \addons\YunWechat\common\services\base\QrcodeService $qrcode 二维码
+ * @property \addons\YunWechat\common\services\base\QrcodeStatService $qrcodeStat 二维码场景
  * @property \addons\YunWechat\common\services\fans\fansService $fans 粉丝
  * @property \addons\YunWechat\common\services\fans\fansStatService $fansStat
  * @property \addons\YunWechat\common\services\fans\FansTagsService $fansTags 粉丝标签
@@ -28,6 +30,8 @@ class Application extends Service
     public $childService = [
         'account' => 'addons\YunWechat\common\services\base\AccountService',
         'menu' => 'addons\YunWechat\common\services\base\MenuService',
+        'qrcode' => 'addons\YunWechat\common\services\base\QrcodeService',
+        'qrcodeStat' => 'addons\YunWechat\common\services\base\QrcodeStatService',
         'fans' => 'addons\YunWechat\common\services\fans\FansService',
         'fansStat' => 'addons\YunWechat\common\services\fans\FansStatService',
         'fansTags' => 'addons\YunWechat\common\services\fans\FansTagsService',

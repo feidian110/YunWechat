@@ -24,7 +24,7 @@ class ReplyDefaultController extends BaseController
         }
 
         // 关键字
-        $keyword = Yii::$app->wechatService->ruleKeyword->getList();
+        $keyword = Yii::$app->yunWechatService->ruleKeyword->getList();
         $keyword = ArrayHelper::map($keyword, 'content', 'content');
         $keyword = ArrayHelper::merge([' ' => '不触发关键字'], $keyword);
 

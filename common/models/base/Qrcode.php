@@ -2,6 +2,7 @@
 
 namespace addons\YunWechat\common\models\base;
 
+use common\behaviors\MerchantBehavior;
 use Yii;
 
 /**
@@ -27,6 +28,17 @@ use Yii;
  */
 class Qrcode extends \common\models\base\BaseModel
 {
+    use MerchantBehavior;
+
+    /**
+     * 临时
+     */
+    const MODEL_TEM = 1;
+
+    /**
+     * 永久
+     */
+    const MODEL_PERPETUAL = 2;
     /**
      * {@inheritdoc}
      */
@@ -41,6 +53,7 @@ class Qrcode extends \common\models\base\BaseModel
     public function rules()
     {
         return [
+            [['name','keyword', 'model'], 'required'],
             [['merchant_id', 'scene_id', 'model', 'expire_seconds', 'subnum', 'extra', 'end_time', 'status', 'created_at', 'updated_at'], 'integer'],
             [['name'], 'string', 'max' => 50],
             [['keyword'], 'string', 'max' => 100],
@@ -48,6 +61,9 @@ class Qrcode extends \common\models\base\BaseModel
             [['ticket'], 'string', 'max' => 250],
             [['type'], 'string', 'max' => 10],
             [['url'], 'string', 'max' => 80],
+            ['model', 'verifyModel'],
+            ['expire_seconds', 'compare', 'compareValue' => 2592000, 'operator' => '<='],
+            ['expire_seconds', 'compare', 'compareValue' => 60, 'operator' => '>='],
         ];
     }
 
@@ -58,22 +74,53 @@ class Qrcode extends \common\models\base\BaseModel
     {
         return [
             'id' => 'ID',
-            'merchant_id' => 'Merchant ID',
-            'name' => 'Name',
-            'keyword' => 'Keyword',
-            'scene_id' => 'Scene ID',
-            'scene_str' => 'Scene Str',
-            'model' => 'Model',
-            'ticket' => 'Ticket',
-            'expire_seconds' => 'Expire Seconds',
-            'subnum' => 'Subnum',
-            'type' => 'Type',
+            'name' => '二维码名称',
+            'keyword' => '二维码触发的关键字',
+            'scene_id' => '场景ID',
+            'scene_str' => '场景名称',
+            'model' => '二维码类型',
+            'ticket' => '微信Ticket',
+            'expire_seconds' => '过期时间',
+            'subnum' => '扫描次数',
+            'type' => '类别',
             'extra' => 'Extra',
-            'url' => 'Url',
+            'url' => '二维码图片解析后的地址',
             'end_time' => 'End Time',
-            'status' => 'Status',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'status' => '状态',
+            'created_at' => '创建时间',
+            'updated_at' => '修改时间',
         ];
+    }
+
+    /**
+     * 验证提交的类别
+     */
+    public function verifyModel()
+    {
+        if ($this->isNewRecord) {
+            // 临时
+            if ($this->model == self::MODEL_TEM) {
+                empty($this->expire_seconds) && $this->addError('expire_seconds', '临时二维码过期时间必填');
+            } else {
+                !$this->scene_str && $this->addError('scene_str', '永久二维码场景字符串必填');
+
+                if (self::find()->where(['scene_str' => $this->scene_str, 'merchant_id' => Yii::$app->services->merchant->getId()])->one()) {
+                    $this->addError('scene_str', '场景值已经存在');
+                }
+            }
+        }
+    }
+
+    /**
+     * @param bool $insert
+     * @return bool
+     */
+    public function beforeSave($insert)
+    {
+        if ($this->isNewRecord) {
+            $this->end_time = time() + (int) $this->expire_seconds;
+        }
+
+        return parent::beforeSave($insert);
     }
 }

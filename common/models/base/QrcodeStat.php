@@ -2,6 +2,8 @@
 
 namespace addons\YunWechat\common\models\base;
 
+use addons\YunWechat\common\models\fans\Fans;
+use common\behaviors\MerchantBehavior;
 use Yii;
 
 /**
@@ -21,6 +23,18 @@ use Yii;
  */
 class QrcodeStat extends \common\models\base\BaseModel
 {
+    use MerchantBehavior;
+
+    const TYPE_ATTENTION = 1;
+    const TYPE_SCAN = 2;
+
+    /**
+     * @var array
+     */
+    public static $typeExplain = [
+        self::TYPE_ATTENTION => '关注',
+        self::TYPE_SCAN => '扫描',
+    ];
     /**
      * {@inheritdoc}
      */
@@ -48,16 +62,20 @@ class QrcodeStat extends \common\models\base\BaseModel
     {
         return [
             'id' => 'ID',
-            'merchant_id' => 'Merchant ID',
-            'qrcord_id' => 'Qrcord ID',
-            'openid' => 'Openid',
-            'type' => 'Type',
-            'name' => 'Name',
-            'scene_str' => 'Scene Str',
-            'scene_id' => 'Scene ID',
-            'status' => 'Status',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'qrcord_id' => '二维码id',
+            'openid' => '用户openid',
+            'type' => '二维码类别',
+            'name' => '二维码名称',
+            'scene_str' => '场景值',
+            'scene_id' => '场景id',
+            'status' => '状态',
+            'created_at' => '创建时间',
+            'updated_at' => '修改时间',
         ];
+    }
+
+    public function getFans()
+    {
+        return $this->hasOne(Fans::class, ['openid' => 'openid'])->select('openid, nickname, follow');
     }
 }

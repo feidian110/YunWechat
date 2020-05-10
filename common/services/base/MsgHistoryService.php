@@ -33,12 +33,7 @@ class MsgHistoryService extends Service
             $data['message'] = $data['type'] == WechatEnum::TYPE_TEXT ? $message['Content'] : Json::encode($message);
 
             $msgHistory->attributes = $data;
-            $demo = new DemoData();
-            $demo->data1 = serialize($data);
-            $demo->data2 = serialize($message);
-            $demo->data3 = serialize($msgHistory);
-            $demo->data4 = serialize($setting);
-            $demo->save(0);
+
             $msgHistory->save();
         }
 

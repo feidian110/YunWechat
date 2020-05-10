@@ -1,9 +1,11 @@
 <?php
 namespace addons\YunWechat\common\services\fans;
 
+use addons\YunWechat\common\models\base\DemoData;
 use addons\YunWechat\common\models\fans\Fans;
 use common\components\Service;
 use common\helpers\ArrayHelper;
+use EasyWeChat\Kernel\Messages\Text;
 use Yii;
 
 class FansService extends Service
@@ -16,14 +18,24 @@ class FansService extends Service
     {
         // 获取用户信息
         $user = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->user->get($openid);
-        $user = ArrayHelper::toArray($user);
-        $fans = $this->findModel($openid);
-        $fans->attributes = $user;
-        $fans->group_id = $user['groupid'];
-        $fans->head_portrait = $user['headimgurl'];
-        $fans->followtime = $user['subscribe_time'];
-        $fans->follow = Fans::FOLLOW_ON;
-        $fans->save();
+
+        if( isset($user['errcode']) ){
+            $fans = $this->findModel($openid);
+            $fans->openid = $openid;
+            $fans->followtime = time();
+            $fans->follow = Fans::FOLLOW_ON;
+            $fans->save();
+        }else{
+            $user = ArrayHelper::toArray($user);
+            $fans = $this->findModel($openid);
+            $fans->attributes = $user;
+            $fans->group_id = $user['groupid'] ?? 0;
+            $fans->unionid = $user['unionid'] ?? "";
+            $fans->head_portrait = $user['headimgurl'] ?? "";
+            $fans->followtime = $user['subscribe_time'] ?? time();
+            $fans->follow = Fans::FOLLOW_ON;
+            $fans->save();
+        }
 
         Yii::$app->yunWechatService->fansStat->upFollowNum();
     }
@@ -39,9 +51,8 @@ class FansService extends Service
             $fans->follow = Fans::FOLLOW_OFF;
             $fans->unfollowtime = time();
             $fans->save();
-
-            Yii::$app->yunWechatService->fansStat->upUnFollowNum();
         }
+        Yii::$app->yunWechatService->fansStat->upUnFollowNum();
     }
 
     /**

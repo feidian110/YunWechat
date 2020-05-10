@@ -2,7 +2,11 @@
 
 namespace addons\YunWechat\common\models\fans;
 
+use common\behaviors\MerchantBehavior;
 use Yii;
+use yii\behaviors\BlameableBehavior;
+use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "yun_net_wechat_fans_stat".
@@ -24,7 +28,7 @@ class FansStat extends \common\models\base\BaseModel
      */
     public static function tableName()
     {
-        return 'yun_net_wechat_fans_stat';
+        return '{{%wechat_fans_stat}}';
     }
 
     /**
@@ -35,7 +39,6 @@ class FansStat extends \common\models\base\BaseModel
         return [
             [['merchant_id', 'new_attention', 'cancel_attention', 'cumulate_attention', 'status', 'created_at', 'updated_at'], 'integer'],
             [['date'], 'required'],
-            [['date'], 'safe'],
         ];
     }
 
@@ -46,14 +49,32 @@ class FansStat extends \common\models\base\BaseModel
     {
         return [
             'id' => 'ID',
-            'merchant_id' => 'Merchant ID',
-            'new_attention' => 'New Attention',
-            'cancel_attention' => 'Cancel Attention',
-            'cumulate_attention' => 'Cumulate Attention',
-            'date' => 'Date',
+            'new_attention' => '今日新关注',
+            'cancel_attention' => '今日取消关注',
+            'cumulate_attention' => '累计关注',
+            'date' => '日期',
             'status' => 'Status',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'created_at' => '创建时间',
+            'updated_at' => '更新时间',
+        ];
+    }
+
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['updated_at'],
+                ],
+            ],
+            [
+                'class' => BlameableBehavior::class,
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_INSERT => ['merchant_id'],
+                ],
+                'value' => Yii::$app->services->merchant->getId(),
+            ]
         ];
     }
 }
