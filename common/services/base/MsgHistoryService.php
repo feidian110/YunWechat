@@ -1,11 +1,6 @@
 <?php
-
-
 namespace addons\YunWechat\common\services\base;
 
-
-use addons\YunWechat\common\models\account\Bind;
-use addons\YunWechat\common\models\base\DemoData;
 use addons\YunWechat\common\models\base\MsgHistory;
 use common\components\Service;
 use common\enums\StatusEnum;

@@ -1,8 +1,7 @@
 <?php
 namespace addons\YunWechat\merchant\controllers;
 
-use addons\YunWechat\common\models\account\Bind;
-use addons\YunWechat\common\models\account\Menu;
+use addons\YunWechat\common\models\base\Menu;
 use common\helpers\ResultHelper;
 use Yii;
 use yii\data\Pagination;
@@ -32,7 +31,7 @@ class MenuController extends BaseController
             ->limit($pages->limit)
             ->all();
 
-        $account = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId());
+        $account = Yii::$app->yunWechatService->account->getAccount();
         // 查询下菜单
         !$models && Yii::$app->debris->getWechatError($account->menu->list());
         return $this->render( $this->action->id,[
@@ -76,12 +75,18 @@ class MenuController extends BaseController
                 return ResultHelper::json(422, $e->getMessage());
             }
         }
+        if( $type == 2 ){
+            $tags =  Yii::$app->yunWechatService->fansTags->getList();
+            if( isset($tags['errcode']) ){
+                return $this->redirect( ['setting/error','code'=>$tags['errcode']] );
+            }
+        }
 
         return $this->render('edit', [
             'model' => $model,
             'menuTypes' => Menu::$menuTypes,
             'type' => $type,
-            'fansTags' => Yii::$app->yunWechatService->fansTags->getList()
+            'fansTags' => $tags ?? ""
         ]);
 
     }
@@ -94,7 +99,7 @@ class MenuController extends BaseController
             $model->save();
 
             // 创建微信菜单
-            $createReturn = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())
+            $createReturn = Yii::$app->yunWechatService->account->getAccount()
                 ->menu->create($model->menu_data);
             // 解析微信接口是否报错
             if ($error = Yii::$app->debris->getWechatError($createReturn, false)) {
@@ -110,7 +115,7 @@ class MenuController extends BaseController
         $model = $this->findModel($id);
         if ($model->delete()) {
             // 个性化菜单删除
-            !empty($model['menu_id']) && Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->menu->delete($model['menu_id']);
+            !empty($model['menu_id']) && Yii::$app->yunWechatService->account->getAccount()->menu->delete($model['menu_id']);
             return $this->message("删除成功", $this->redirect(['index', 'type' => $type]));
         }
 

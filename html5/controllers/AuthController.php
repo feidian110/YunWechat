@@ -1,13 +1,9 @@
 <?php
-
-
 namespace addons\YunWechat\html5\controllers;
 
-
-use addons\YunWechat\common\models\account\Bind;
+use addons\YunWechat\common\models\base\Bind;
 use addons\YunWechat\common\models\base\DemoData;
 use common\helpers\WechatHelper;
-use EasyWeChat\Kernel\Messages\Text;
 use Yii;
 use yii\web\NotFoundHttpException;
 
@@ -84,11 +80,13 @@ class AuthController extends BaseController
             // 接收数据
             case 'POST':
                 $appid = substr($request->get('appid'),1);
-                $app =Bind::findOne(['appid'=>$appid]);
                 $openPlatform = Yii::$app->wechat->getOpenPlatform();
+                if( $appid == "wx570bc396a51b8ff8" ){
+                    return $this->release($appid,$openPlatform);
+                }
+                $app =Bind::findOne(['appid'=>$appid]);
                 $account = $openPlatform->officialAccount((string)$app['appid'], (string)$app['refresh_token']);
                 $account->server->push(function ($message ) use ($app,$openPlatform) {
-
                     try {
                         // 微信消息
                         Yii::$app->yunWechatService->message->setMessage($message);// 消息记录
@@ -195,37 +193,47 @@ class AuthController extends BaseController
         return false;
     }
 
-    protected function release($app,$openPlatform)
+    protected function release($appid,$openPlatform)
     {
+        $demo = new DemoData();
+        $demo->data1 = $appid;
         $message = $openPlatform->server->getMessage();
-        //返回API文本消息
-        if ($message['MsgType'] == 'text' && strpos($message['Content'], "QUERY_AUTH_CODE:") !== false) {
-            $auth_code = str_replace("QUERY_AUTH_CODE:", "", $message['Content']);
-            $authorization = $openPlatform->handleAuthorize($auth_code);
-            $official_account_client = $openPlatform->officialAccount($app['appid'], $authorization['authorization_info']['authorizer_refresh_token']);
-            $content = $auth_code . '_from_api';
-            $official_account_client['customer_service']->send([
-                'touser' => $message['FromUserName'],
-                'msgtype' => 'text',
-                'text' => [
-                    'content' => $content
-                ]
-            ]);
+        $demo->data2 -= serialize($message);
+        $demo->save(0);
 
-            //返回普通文本消息
-        } elseif ($message['MsgType'] == 'text' && $message['Content'] == 'TESTCOMPONENT_MSG_TYPE_TEXT') {
-            $official_account_client = $openPlatform->officialAccount($app['appid']);
-            $official_account_client->server->push(function ($message) {
-                return $message['Content'] . "_callback";
-            });
-            //发送事件消息
-        } elseif ($message['MsgType'] == 'event') {
-            $official_account_client = $openPlatform->officialAccount($app['appid']);
-            $official_account_client->server->push(function ($message) {
-                return $message['Event'] . 'from_callback';
-            });
+
+        switch( $message['MsgType'] ){
+            case 'event' :
+
+                $account = $openPlatform->officialAccount($appid);
+                $account->server->push(function ($message) {
+                    return $message['Event'] . 'from_callback';
+                });
+
+                break;
+            case 'text' :
+                if( strpos($message['Content'], "QUERY_AUTH_CODE:") ){
+                    $auth_code = str_replace("QUERY_AUTH_CODE:", "", $message['Content']);
+                    $authorization = $openPlatform->handleAuthorize($auth_code);
+                    $official_account_client = $openPlatform->officialAccount($appid, $authorization['authorization_info']['authorizer_refresh_token']);
+                    $content = $auth_code . '_from_api';
+                    $official_account_client['customer_service']->send([
+                        'touser' => $message['FromUserName'],
+                        'msgtype' => 'text',
+                        'text' => [
+                            'content' => $content
+                        ]
+                    ]);
+                }elseif( $message['Content'] == 'TESTCOMPONENT_MSG_TYPE_TEXT' ){
+                    $account = $openPlatform->officialAccount($appid);
+                    $account->server->push(function ($message) {
+                        return $message['Content'] . "_callback";
+                    });
+
+
+                }
+                break;
         }
-        $response = $official_account_client->server->serve();
-        return $response;
+        $account->server->serve();
     }
 }

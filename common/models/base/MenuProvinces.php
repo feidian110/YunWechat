@@ -43,12 +43,12 @@ class MenuProvinces extends \common\models\base\BaseModel
     {
         return [
             'id' => 'ID',
-            'title' => 'Title',
-            'pid' => 'Pid',
-            'level' => 'Level',
-            'status' => 'Status',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'title' => '标题',
+            'pid' => '父级id',
+            'level' => '级别',
+            'status' => '状态',
+            'created_at' => '创建时间',
+            'updated_at' => '更新时间',
         ];
     }
 }

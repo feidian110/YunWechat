@@ -40,7 +40,7 @@ class QrcodeService extends Service
      */
     public function syncCreate(Qrcode $model)
     {
-        $qrcode = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->qrcode;
+        $qrcode = Yii::$app->yunWechatService->account->getAccount()->qrcode;
         if ($model->model == Qrcode::MODEL_TEM) {
             $scene_id = $this->getSceneId();
             $result = $qrcode->temporary($scene_id, $model->expire_seconds);

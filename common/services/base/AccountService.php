@@ -2,7 +2,7 @@
 namespace addons\YunWechat\common\services\base;
 
 use addons\YunStore\common\enums\StateEnum;
-use addons\YunWechat\common\models\account\Bind;
+use addons\YunWechat\common\models\base\Bind;
 use common\components\Service;
 use Yii;
 
@@ -14,9 +14,9 @@ class AccountService extends Service
      * @param $merchantId
      * @return \EasyWeChat\OfficialAccount\Application|\EasyWeChat\OpenPlatform\Authorizer\OfficialAccount\Application
      */
-    public function getAccount($merchantId)
+    public function getAccount()
     {
-        $app = $this->getBindInfo($merchantId);
+        $app = $this->getBindInfo($this->getMerchantId());
         $openPlatform = Yii::$app->wechat->getOpenPlatform();
         return $openPlatform->officialAccount((string)$app['appid'], (string)$app['refresh_token']);
     }

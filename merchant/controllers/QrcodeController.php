@@ -1,0 +1,144 @@
+<?php
+
+
+namespace addons\YunWechat\merchant\controllers;
+
+
+use addons\YunWechat\common\models\base\Qrcode;
+use common\helpers\ResultHelper;
+use common\traits\MerchantCurd;
+use Yii;
+use yii\data\Pagination;
+use yii\web\Response;
+
+class QrcodeController extends  BaseController
+{
+    use MerchantCurd;
+
+    public $modelClass = Qrcode::class;
+
+    /**
+     * @return string
+     */
+    public function actionIndex()
+    {
+        $data = Qrcode::find()->where(['merchant_id' => $this->getMerchantId()]);
+        $pages = new Pagination(['totalCount' => $data->count(), 'pageSize' => $this->pageSize]);
+        $models = $data->offset($pages->offset)
+            ->orderBy('id desc')
+            ->limit($pages->limit)
+            ->all();
+
+        return $this->render('index', [
+            'models' => $models,
+            'pages' => $pages,
+        ]);
+    }
+
+    /**
+     * 创建或编辑二维码
+     * @return mixed|string|Response
+     * @throws \yii\base\ExitException
+     */
+    public function actionAjaxEdit()
+    {
+        $id = Yii::$app->request->get('id');
+        /** @var Qrcode $model */
+        $model = $this->findModel($id);
+
+        // ajax 校验
+        $this->activeFormValidate($model);
+        if ($model->load(Yii::$app->request->post())) {
+            $model->isNewRecord && $model = Yii::$app->yunWechatService->qrcode->syncCreate($model);
+            return $model->save()
+                ? $this->redirect(['index'])
+                : $this->message($this->getError($model), $this->redirect(['index']), 'error');
+        }
+
+        return $this->renderAjax($this->action->id, [
+            'model' => $model,
+        ]);
+    }
+
+    /**
+     * 删除全部过期的二维码
+     * @return mixed|string
+     */
+    public function actionDeleteAll()
+    {
+        if (Qrcode::deleteAll([
+            'and',
+            ['model' => Qrcode::MODEL_TEM],
+            ['<', 'end_time', time()],
+            ['merchant_id' => $this->getMerchantId()]
+        ])) {
+            return $this->message("删除成功", $this->redirect(['index']));
+        }
+
+        return $this->message("删除失败", $this->redirect(['index']), 'error');
+    }
+
+    /**
+     * 下载二维码
+     */
+    public function actionDown()
+    {
+        $id = Yii::$app->request->get('id');
+        $model = Qrcode::findOne($id);
+        $url = Yii::$app->yunWechatService->account->getAccount()->qrcode->url($model['ticket']);
+
+        header("Cache-control:private");
+        header('content-type:image/jpeg');
+        header('content-disposition: attachment;filename="' . $model['name'] . '_' . time() . '.jpg"');
+        readfile($url);
+    }
+
+    /**
+     * 长链接二维码
+     * @return array|mixed|string
+     * @throws \EasyWeChat\Kernel\Exceptions\HttpException
+     * @throws \EasyWeChat\Kernel\Exceptions\InvalidArgumentException
+     * @throws \EasyWeChat\Kernel\Exceptions\InvalidConfigException
+     * @throws \EasyWeChat\Kernel\Exceptions\RuntimeException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     * @throws \yii\web\UnprocessableEntityHttpException
+     */
+    public function actionLongUrl()
+    {
+        if (Yii::$app->request->isAjax) {
+            $postUrl = Yii::$app->request->post('shortUrl', '');
+            $shortUrl = Yii::$app->yunWechatService->account->getAccount()->url->shorten($postUrl);
+
+            if ($error = Yii::$app->debris->getWechatError($shortUrl, false)) {
+                return ResultHelper::json(422, $error);
+            }
+
+            return ResultHelper::json(200, '二维码转化成功', [
+                'short_url' => $shortUrl['short_url']
+            ]);
+        }
+
+        return $this->render('long-url');
+    }
+
+
+    /**
+     * 二维码转换
+     * @return mixed
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function actionQr()
+    {
+        $getUrl = Yii::$app->request->get('shortUrl', Yii::$app->request->hostInfo);
+
+        $qr = Yii::$app->get('qr');
+        Yii::$app->response->format = Response::FORMAT_RAW;
+        Yii::$app->response->headers->add('Content-Type', $qr->getContentType());
+
+        return $qr->setText($getUrl)
+            ->setSize(150)
+            ->setMargin(7)
+            ->writeString();
+    }
+}

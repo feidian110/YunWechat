@@ -115,7 +115,7 @@ class FansStatService extends  Service
         }
 
         // 获取微信统计数据
-        $stats = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->data_cube;
+        $stats = Yii::$app->yunWechatService->account->getAccount()->data_cube;
         // 增减
         $userSummary = $stats->userSummary($sevenDays[6], $sevenDays[0]);
         // 累计用户

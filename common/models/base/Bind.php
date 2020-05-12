@@ -1,6 +1,6 @@
 <?php
 
-namespace addons\YunWechat\common\models\account;
+namespace addons\YunWechat\common\models\base;
 
 use Yii;
 

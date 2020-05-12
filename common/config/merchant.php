@@ -38,13 +38,37 @@ return [
                     'route' => 'menu/index',
                 ],
                 [
+                    'title' => '网页授权',
+                    'route' => 'auth/index',
+                ],
+                [
                     'title' => '二维码/转化链接',
                     'route' => 'qrcode/index',
                 ],
+            ],
+        ],
+        [
+            'title' => '消息管理',
+            'route' => 'function',
+            'icon' => 'fa-fw fa-file-text',
+            'child' => [
                 [
                     'title' => '素材库',
                     'route' => 'attachment/index',
                 ],
+                [
+                    'title' => '定时群发',
+                    'route' => 'mass-record/index',
+
+                ],
+
+                [
+                    'title' => '历史消息',
+                    'route' => 'msg-history/index',
+
+                ],
+
+
             ],
         ],
         [
@@ -60,16 +84,7 @@ return [
                     'title' => '粉丝标签',
                     'route' => 'fans-tags/index',
                 ],
-                [
-                    'title' => '历史消息',
-                    'route' => 'msg-history/index',
 
-                ],
-                [
-                    'title' => '定时群发',
-                    'route' => 'mass-record/index',
-
-                ],
             ],
         ],
 

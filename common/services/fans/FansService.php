@@ -1,11 +1,9 @@
 <?php
 namespace addons\YunWechat\common\services\fans;
 
-use addons\YunWechat\common\models\base\DemoData;
 use addons\YunWechat\common\models\fans\Fans;
 use common\components\Service;
 use common\helpers\ArrayHelper;
-use EasyWeChat\Kernel\Messages\Text;
 use Yii;
 
 class FansService extends Service
@@ -17,7 +15,7 @@ class FansService extends Service
     public function follow($openid)
     {
         // 获取用户信息
-        $user = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->user->get($openid);
+        $user = Yii::$app->yunWechatService->account->getAccount()->user->get($openid);
 
         if( isset($user['errcode']) ){
             $fans = $this->findModel($openid);
@@ -64,7 +62,7 @@ class FansService extends Service
      */
     public function syncByOpenid($openid)
     {
-        $user = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->user->get($openid);
+        $user = Yii::$app->yunWechatService->account->getAccount()->user->get($openid);
         if ($user['subscribe'] == Fans::FOLLOW_ON) {
             $fans = $this->findModel($openid);
             $fans->attributes = $user;
@@ -99,7 +97,7 @@ class FansService extends Service
     public function syncAllOpenid()
     {
         // 获取全部列表
-        $fans_list = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->user->list();
+        $fans_list = Yii::$app->yunWechatService->account->getAccount()->user->list();
         Yii::$app->debris->getWechatError($fans_list);
         $fans_count = $fans_list['total'];
 

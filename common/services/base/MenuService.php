@@ -1,7 +1,7 @@
 <?php
 namespace addons\YunWechat\common\services\base;
 
-use addons\YunWechat\common\models\account\Menu;
+use addons\YunWechat\common\models\base\Menu;
 use common\components\Service;
 use Yii;
 use yii\web\UnprocessableEntityHttpException;
@@ -62,12 +62,12 @@ class MenuService extends Service
             ];
 
             // 创建自定义菜单
-            $menuResult = Yii::$app->wechat->app->menu->create($buttons, $matchRule);
+            $menuResult = Yii::$app->yunWechatService->account->getAccount()->menu->create($buttons, $matchRule);
             Yii::$app->debris->getWechatError($menuResult);
             $model->menu_id = $menuResult['menuid'];
         } else {
             // 验证微信报错
-            Yii::$app->debris->getWechatError(Yii::$app->wechat->app->menu->create($buttons));
+            Yii::$app->debris->getWechatError(Yii::$app->yunWechatService->account->getAccount()->menu->create($buttons));
         }
 
         if (!$model->save()) {
@@ -95,7 +95,7 @@ class MenuService extends Service
     {
 
         // 获取菜单列表
-        $account = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId());
+        $account = Yii::$app->yunWechatService->account->getAccount();
         $list = $account->menu->list();
         // 解析微信接口是否报错
         Yii::$app->debris->getWechatError($list);

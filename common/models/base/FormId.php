@@ -44,12 +44,22 @@ class FormId extends \common\models\base\BaseModel
     {
         return [
             'id' => 'ID',
-            'merchant_id' => 'Merchant ID',
-            'member_id' => 'Member ID',
-            'form_id' => 'Form ID',
-            'stoped_at' => 'Stoped At',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'merchant_id' => '商户id',
+            'member_id' => '用户id',
+            'form_id' => 'formid',
+            'stoped_at' => '失效时间',
+            'created_at' => '创建时间',
+            'updated_at' => '修改时间',
         ];
+    }
+
+    public function beforeSave($insert)
+    {
+        if ($this->isNewRecord) {
+            // 小程序formid有效时间为7天
+            $this->stoped_at = time() + 7 * 24 * 60 * 60 - 60;
+        }
+
+        return parent::beforeSave($insert);
     }
 }

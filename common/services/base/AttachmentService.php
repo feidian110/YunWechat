@@ -167,7 +167,7 @@ class AttachmentService extends Service
             foreach ($match[2] as $src) {
                 // 判断是否已经上传到微信了
                 if (strpos(urldecode($src), Attachment::WECHAT_MEDIAT_URL) === false) {
-                    $result = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->material->uploadArticleImage(StringHelper::getLocalFilePath($src));
+                    $result = Yii::$app->yunWechatService->account->getAccount()->material->uploadArticleImage(StringHelper::getLocalFilePath($src));
                     // 替换图片上传
                     $item['content'] = StringHelper::replace($src, $result['url'], $item['content']);
                 }
@@ -225,17 +225,17 @@ class AttachmentService extends Service
             if (!$isNewRecord) {
                 // 更新图文
                 foreach ($wechatArticleList as $k => $value) {
-                    $res = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->material->updateArticle($model['media_id'], $value, $k);
+                    $res = Yii::$app->yunWechatService->account->getAccount()->material->updateArticle($model['media_id'], $value, $k);
                     Yii::$app->debris->getWechatError($res);
                 }
             } else {
                 // 上传图文信息
-                $res = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->material->uploadArticle($wechatArticleList);
+                $res = Yii::$app->yunWechatService->account->getAccount()->material->uploadArticle($wechatArticleList);
                 Yii::$app->debris->getWechatError($res);
                 $model->media_id = $res['media_id'];
                 $model->save();
 
-                $getNews = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->material->get($res['media_id']);
+                $getNews = Yii::$app->yunWechatService->account->getAccount()->material->get($res['media_id']);
                 return $getNews['news_item'];
             }
         }
@@ -256,7 +256,7 @@ class AttachmentService extends Service
             $model = new Attachment();
             $model->local_url = $thumb_url;
             // 上传到微信
-            $material = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->material->uploadImage(StringHelper::getLocalFilePath($thumb_url));
+            $material = Yii::$app->yunWechatService->account->getAccount()->material->uploadImage(StringHelper::getLocalFilePath($thumb_url));
 
             $model->media_type = Attachment::TYPE_IMAGE;
             $model->media_id = $material['media_id'];
@@ -287,18 +287,18 @@ class AttachmentService extends Service
 
         switch ($defaultType) {
             case Attachment::TYPE_VIDEO :
-                $result = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->material->uploadVideo($localFilePath, $model->file_name,
+                $result = Yii::$app->yunWechatService->account->getAccount()->material->uploadVideo($localFilePath, $model->file_name,
                     $model->description);
-                $detail = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->material->get($result['media_id']);
+                $detail = Yii::$app->yunWechatService->account->getAccount()->material->get($result['media_id']);
                 $model->media_url = $detail['down_url'];
                 break;
             case Attachment::TYPE_IMAGE :
-                $result = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->material->uploadImage($localFilePath);
+                $result = Yii::$app->yunWechatService->account->getAccount()->material->uploadImage($localFilePath);
                 $model->media_url = $result['url'] ?? '';
                 $model->file_name = array_slice(explode('/', $model->local_url), -1, 1)[0];
                 break;
             case Attachment::TYPE_VOICE :
-                $result = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->material->uploadVoice($localFilePath);
+                $result = Yii::$app->yunWechatService->account->getAccount()->material->uploadVoice($localFilePath);
                 $model->file_name = array_slice(explode('/', $model->local_url), -1, 1)[0];
                 break;
         }
@@ -327,7 +327,7 @@ class AttachmentService extends Service
         $attachment = $this->findById($attach_id);
         // 1:微信号预览 2:openid预览
         $method = $sendType == 1 ? $this->previewActionsByName[$attachment['media_type']] : $this->previewActions[$attachment['media_type']];
-        $result = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->broadcasting->$method($attachment['media_id'], $content);
+        $result = Yii::$app->yunWechatService->account->getAccount()->broadcasting->$method($attachment['media_id'], $content);
         Yii::$app->debris->getWechatError($result);
     }
 
@@ -348,7 +348,7 @@ class AttachmentService extends Service
      */
     public function sync($type, $offset, $count)
     {
-        $app = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId());
+        $app = Yii::$app->yunWechatService->account->getAccount();
         $lists = $app->material->list($type, $offset, $count);
         // 解析微信接口是否报错.报错则抛出错误信息
         Yii::$app->debris->getWechatError($lists);

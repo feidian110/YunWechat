@@ -2,7 +2,8 @@
 
 namespace addons\YunWechat\merchant\controllers;
 
-use addons\YunWechat\common\models\account\Bind;
+use addons\YunWechat\common\models\base\Bind;
+use common\enums\StatusEnum;
 use Yii;
 use common\helpers\ArrayHelper;
 use common\interfaces\AddonsSetting;
@@ -36,12 +37,29 @@ class SettingController extends BaseController implements AddonsSetting
 
     public function actionHistoryStat()
     {
-
         $app = Yii::$app->wechat->getOpenPlatform();
-        $url = $app->getPreAuthorizationUrl('http://zebra.yun-net.com/merchant/yun-wechat/setting/call-back?merchantid='.Yii::$app->services->merchant->getId());
+        $bind = Bind::findOne(['merchant_id'=>$this->getMerchantId(),'status'=>StatusEnum::ENABLED]);
+        if( $bind == null ){
+            $url = $app->getPreAuthorizationUrl('http://zebra.yun-net.com/merchant/yun-wechat/setting/call-back?merchantid='.Yii::$app->services->merchant->getId());
+        }
+
         return $this->render( $this->action->id,[
-            'url' =>$url
+            'bind' => $bind,
+            'url' =>$url ?? ""
         ] );
+    }
+
+    public function actionError()
+    {
+        $code = Yii::$app->request->get('code','');
+        return $this->render( $this->action->id,[
+            'code' => $code
+        ] );
+    }
+
+    public function actionSuccess()
+    {
+        return $this->render( $this->action->id );
     }
 
     public function actionCallBack()

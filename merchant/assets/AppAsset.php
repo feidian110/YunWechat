@@ -18,9 +18,12 @@ class AppAsset extends AssetBundle
     public $sourcePath = '@addons/YunWechat/merchant/resources/';
 
     public $css = [
+        'css/wechat.css'
     ];
 
     public $js = [
+        'js/vue.min.js',
+        'js/vuedraggable.min.js',
     ];
 
     public $depends = [

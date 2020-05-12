@@ -2,6 +2,7 @@
 
 namespace addons\YunWechat\common\models\fans;
 
+use common\behaviors\MerchantBehavior;
 use Yii;
 
 /**
@@ -14,8 +15,9 @@ use Yii;
  * @property int $created_at 创建时间
  * @property int $updated_at 修改时间
  */
-class Tags extends \common\models\base\BaseModel
+class FansTags extends \common\models\base\BaseModel
 {
+    use MerchantBehavior;
     /**
      * {@inheritdoc}
      */
@@ -42,11 +44,10 @@ class Tags extends \common\models\base\BaseModel
     {
         return [
             'id' => 'ID',
-            'merchant_id' => 'Merchant ID',
-            'tags' => 'Tags',
-            'status' => 'Status',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'tags' => '标签',
+            'status' => '状态',
+            'created_at' => '创建时间',
+            'updated_at' => '修改时间',
         ];
     }
 }

@@ -57,9 +57,9 @@ class MessageService extends  Service
 
             $method = $this->sendMethod[$massRecord->module];
             if ($massRecord->tag_id > 0) {
-                $result = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->broadcasting->$method($sendContent, $massRecord->tag_id);
+                $result = Yii::$app->yunWechatService->account->getAccount()->broadcasting->$method($sendContent, $massRecord->tag_id);
             } else {
-                $result = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->broadcasting->$method($sendContent);
+                $result = Yii::$app->yunWechatService->account->getAccount()->broadcasting->$method($sendContent);
             }
 
             Yii::$app->debris->getWechatError($result);
@@ -131,7 +131,7 @@ class MessageService extends  Service
                 $message = new Voice($data);
                 break;
         }
-        $result = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId())->customer_service->message($message)->to($openid)->send();
+        $result = Yii::$app->yunWechatService->account->getAccount()->customer_service->message($message)->to($openid)->send();
         Yii::$app->debris->getWechatError($result);
     }
 

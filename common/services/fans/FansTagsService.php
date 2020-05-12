@@ -2,8 +2,9 @@
 namespace addons\YunWechat\common\services\fans;
 
 
-use addons\YunWechat\common\models\fans\Tags;
+use addons\YunWechat\common\models\fans\FansTags;
 use common\components\Service;
+use common\helpers\ResultHelper;
 use Yii;
 use yii\web\NotFoundHttpException;
 
@@ -65,15 +66,17 @@ class FansTagsService extends Service
      */
     public function getList($reacquire = false)
     {
-        if (empty(($model = Tags::find()->filterWhere(['merchant_id' => $this->getMerchantId()])->one()))) {
-            $model = new Tags();
+        if (empty(($model = FansTags::find()->filterWhere(['merchant_id' => $this->getMerchantId()])->one()))) {
+            $model = new FansTags();
         }
 
 
         if ($model->isNewRecord || true === $reacquire) {
-            $account = Yii::$app->yunWechatService->account->getAccount($this->getMerchantId());
+            $account = Yii::$app->yunWechatService->account->getAccount();
             $list = $account->user_tag->list();
-
+            if( isset($list['errcode']) && $list['errcode'] == 48001 ){
+                return $list;
+            }
             Yii::$app->debris->getWechatError($list);
             $tags = isset($list['tags']) ? $list['tags'] : [];
             $model->tags = serialize($tags);
@@ -81,5 +84,7 @@ class FansTagsService extends Service
         }
 
         return unserialize($model->tags);
+
+
     }
 }

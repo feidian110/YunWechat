@@ -2,6 +2,7 @@
 
 namespace addons\YunWechat\common\models\base;
 
+use common\behaviors\MerchantBehavior;
 use Yii;
 
 /**
@@ -29,6 +30,7 @@ use Yii;
  */
 class AttachmentNews extends \common\models\base\BaseModel
 {
+    use MerchantBehavior;
     /**
      * {@inheritdoc}
      */
@@ -43,7 +45,7 @@ class AttachmentNews extends \common\models\base\BaseModel
     public function rules()
     {
         return [
-            [['merchant_id', 'attachment_id', 'show_cover_pic', 'sort', 'year', 'month', 'day', 'status', 'created_at', 'updated_at'], 'integer'],
+            [['merchant_id', 'attachment_id', 'show_cover_pic', 'sort', 'status', 'created_at', 'updated_at'], 'integer'],
             [['content'], 'string'],
             [['title', 'thumb_media_id'], 'string', 'max' => 50],
             [['thumb_url', 'digest', 'content_source_url', 'media_url'], 'string', 'max' => 200],
@@ -58,24 +60,25 @@ class AttachmentNews extends \common\models\base\BaseModel
     {
         return [
             'id' => 'ID',
-            'merchant_id' => 'Merchant ID',
-            'attachment_id' => 'Attachment ID',
-            'title' => 'Title',
-            'thumb_media_id' => 'Thumb Media ID',
-            'thumb_url' => 'Thumb Url',
-            'author' => 'Author',
+            'attachment_id' => '关联id',
+            'title' => '标题',
+            'thumb_media_id' => '缩略图资源id',
+            'thumb_url' => '缩略图 Url',
+            'author' => '作者',
             'digest' => 'Digest',
-            'show_cover_pic' => 'Show Cover Pic',
-            'content' => 'Content',
-            'content_source_url' => 'Content Source Url',
-            'media_url' => 'Media Url',
-            'sort' => 'Sort',
-            'year' => 'Year',
-            'month' => 'Month',
-            'day' => 'Day',
-            'status' => 'Status',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'show_cover_pic' => '封面',
+            'content' => '内容',
+            'content_source_url' => '外链',
+            'media_url' => '资源 Url',
+            'sort' => '排序',
+            'status' => '状态',
+            'created_at' => '创建时间',
+            'updated_at' => '更新时间',
         ];
+    }
+
+    public function getAttachment()
+    {
+        return $this->hasOne(Attachment::class, ['id' => 'attachment_id']);
     }
 }

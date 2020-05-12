@@ -36,6 +36,28 @@ $this->params['breadcrumbs'][] = ['label' => $this->title];
                 </li>
             </ul>
             <div class="tab-content">
+                <div class="alert alert-warning alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h4><i class="icon fa fa-warning"></i> 提示!</h4>
+                    <?php if( $type == 1 ){
+                        echo '<ul>
+                        <li>使用本模块生成微信端，必须在微信公众平台申请自定义菜单使用的AppId和AppSecret</li>
+                        <li>微信端最多创建3 个一级菜单，每个一级菜单下最多可以创建 5 个二级菜单，菜单最多支持两层。（多出部分会生成前3个一级菜单）</li>
+                        <li>如果您绑定的是订阅号，自定菜单是不可用的</li>
+                    </ul>';
+                    }else{
+                        echo '<ul>
+<li>必须在微信公众平台申请自定义菜单使用的AppId和AppSecret</li>
+<li>最多创建3 个一级菜单，每个一级菜单下最多可以创建 5 个二级菜单，菜单最多支持两层。（多出部分会生成前3个一级菜单）</li>
+<li>该功能开放给已认证订阅号和已认证服务号。</li>
+<li>当公众号创建多个个性化菜单时，将按照生成菜单时间顺序，由新到旧逐一匹配，如果全部个性化菜单都没有匹配成功，则显示默认菜单</li>
+<li>必须要有一个默认菜单才可以添加个性化自定义菜单，点击进入【自定义菜单】来设置默认菜单。</li>
+<li>个性化菜单要求用户的微信客户端版本在iPhone6.2.2，Android 6.2.4以上。</li>
+<li>最多只能设置为跳转到3个域名下的链接</li>
+</ul>';
+                    }?>
+
+                </div>
                 <div class="active tab-pane">
                     <table class="table table-hover">
                         <thead>
